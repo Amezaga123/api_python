@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from config import app, db
-from models import Professor, Turma, Aluno
+from models import Professor, Turma, Aluno, Atividade
 
 @app.route('/professores', methods=['POST'])
 def create_professor():
@@ -43,7 +43,60 @@ def create_aluno():
     db.session.commit()
     return jsonify({"message": "Aluno criado com sucesso"}), 201
 
+# Rota: Criar nova atividade
+@app.route('/atividades', methods=['POST'])
+def create_atividade():
+    data = request.get_json()
+    atividade = Atividade(
+        id_disciplina=data['id_disciplina'],
+        enunciado=data['enunciado'],
+        respostas=data.get('respostas', [])
+    )
+    db.session.add(atividade)
+    db.session.commit()
+    return jsonify({"message": "Atividade criada com sucesso"}), 201
+
+# Rota: Atualizar atividade existente
+@app.route('/atividades/<int:id_atividade>/', methods=['PUT'])
+def update_atividade(id_atividade):
+    atividade = Atividade.query.get(id_atividade)
+    if not atividade:
+        return jsonify({"error": "Atividade não encontrada"}), 404
+
+    data = request.get_json()
+    atividade.id_disciplina = data.get('id_disciplina', atividade.id_disciplina)
+    atividade.enunciado = data.get('enunciado', atividade.enunciado)
+    atividade.respostas = data.get('respostas', atividade.respostas)
+    
+    db.session.commit()
+    return jsonify({
+        "message": "Atividade atualizada com sucesso",
+        "atividade": {
+            "id_atividade": atividade.id_atividade,
+            "id_disciplina": atividade.id_disciplina,
+            "enunciado": atividade.enunciado,
+            "respostas": atividade.respostas
+        }
+    }), 200
+
+# Rota: Excluir atividade existente
+@app.route('/atividades/<int:id_atividade>/', methods=['DELETE'])
+def delete_atividade(id_atividade):
+    atividade = Atividade.query.get(id_atividade)
+    if not atividade:
+        return jsonify({"error": "Atividade não encontrada"}), 404
+
+    db.session.delete(atividade)
+    db.session.commit()
+    return jsonify({"message": "Atividade excluída com sucesso"}), 200
+
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()  
+        db.create_all()
+    app.run(debug=True)
+
+if __name__ == '__main__':
+    print(app.url_map)  # Lista todas as rotas
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)

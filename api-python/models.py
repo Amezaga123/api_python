@@ -1,8 +1,6 @@
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from config import db
 
-db = SQLAlchemy()
-
+# Modelo de Professor
 class Professor(db.Model):
     __tablename__ = 'professores'
     id = db.Column(db.Integer, primary_key=True)
@@ -11,15 +9,17 @@ class Professor(db.Model):
     materia = db.Column(db.String(50), nullable=False)
     observacoes = db.Column(db.String(200))
 
+# Modelo de Turma
 class Turma(db.Model):
     __tablename__ = 'turmas'
     id = db.Column(db.Integer, primary_key=True)
     descricao = db.Column(db.String(100), nullable=False)
     ativo = db.Column(db.Boolean, default=True)
     professor_id = db.Column(db.Integer, db.ForeignKey('professores.id'), nullable=False)
-    
+
     professor = db.relationship("Professor", backref="turmas")
 
+# Modelo de Aluno
 class Aluno(db.Model):
     __tablename__ = 'alunos'
     id = db.Column(db.Integer, primary_key=True)
@@ -44,3 +44,12 @@ class Aluno(db.Model):
         self.nota_segundo_semestre = nota_segundo_semestre
         self.media_final = media_final
         self.turma_id = turma_id
+
+
+# Modelo de Atividade
+class Atividade(db.Model):
+    __tablename__ = 'atividades'
+    id_atividade = db.Column(db.Integer, primary_key=True)
+    id_disciplina = db.Column(db.Integer, nullable=False)
+    enunciado = db.Column(db.String(500), nullable=False)
+    respostas = db.Column(db.JSON, default=[])
